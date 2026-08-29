@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+```
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+>
+
+<meta name="theme-color" content="#76c9ef">
+
+<title>TYAGA — Player Profile</title>
+
+<style>
+    /* =========================================================
+       TYAGA
+       Premium mobile-game UI × original adult-cartoon aesthetic
+       ========================================================= */
+
+    :root {
+        color-scheme: light;
+
+        --sky: #78cbed;
+        --sky-deep: #4caed8;
+        --cream: #fff8e9;
+        --paper: #fffdf7;
+        --ink: #171b25;
+        --ink-soft: #343946;
+
+        --blue: #3e9fd0;
+        --blue-dark: #257ba9;
+
+        --green: #64bd68;
+        --green-dark: #3e9147;
+
+        --yellow: #ffd45c;
+        --red: #ed625d;
+        --pink: #ef9baa;
+
+        --white: #ffffff;
+
+        --outline: 3px solid var(--ink);
+
+        --shadow:
+            0 7px 0 rgba(23, 27, 37, 0.92),
+            0 18px 38px rgba(28, 67, 91, 0.24);
+
+        --soft-shadow:
+            0 4px 0 rgba(23, 27, 37, 0.9),
+            0 10px 25px rgba(28, 67, 91, 0.18);
+    }
+
+    * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+    }
+
+    body {
+        min-height: 100svh;
+        overflow-x: hidden;
+
+        color: var(--ink);
+
+        font-family:
+            Inter,
+            Manrope,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            Helvetica,
+            Arial,
+            sans-serif;
+
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+
+        background:
+            linear-gradient(
+                180deg,
+                #73c9ec 0%,
+                #8dd4ef 56%,
+                #c8e8c0 100%
+            );
+    }
+
+    button {
+        font: inherit;
+    }
+
+    /* =========================================================
+       CARTOON WORLD BACKGROUND
+       ========================================================= */
+
+    .world {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .sky-glow {
+        position: absolute;
+        width: 75vw;
+        height: 75vw;
+        max-width: 520px;
+        max-height: 520px;
+
+        top: -38vw;
+        left: 50%;
+
+        transform: translateX(-50%);
+
+        border-radius: 50%;
+
+        background: rgba(255, 255, 255, 0.24);
+
+        filter: blur(2px);
+    }
+
+    .sun {
+        position: absolute;
+
+        top: 8%;
+        right: -22px;
+
+        width: 72px;
+        height: 72px;
+
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+
+        background: var(--yellow);
+
+        box-shadow:
+            4px 5px 0 var(--ink),
+            0 0 0 8px rgba(255, 212, 92, 0.14);
+
+        opacity: 0.9;
+    }
+
+    /* clouds */
+
+    .cloud {
+        position: absolute;
+
+        width: 125px;
+        height: 42px;
+
+        border: 3px solid rgba(23, 27, 37, 0.75);
+        border-radius: 50px;
+
+        background: rgba(255, 255, 255, 0.86);
+
+        opacity: 0.68;
+
+        animation: cloudDrift linear infinite;
+    }
+
+    .cloud::before,
+    .cloud::after {
+        content: "";
+
+        position: absolute;
+
+        bottom: 5px;
+
+        border: 3px solid rgba(23, 27, 37, 0.75);
+        border-bottom: 0;
+
+        border-radius: 50% 50% 0 0;
+
+        background: inherit;
+    }
+
+    .cloud::before {
+        left: 22px;
+
+        width: 43px;
+        height: 39px;
+    }
+
+    .cloud::after {
+        right: 19px;
+
+        width: 53px;
+        height: 48px;
+    }
+
+    .cloud-1 {
+        top: 13%;
+        left: -150px;
+        animation-duration: 34s;
+    }
+
+    .cloud-2 {
+        top: 27%;
+        right: -150px;
+        transform: scale(0.72);
+        animation-duration: 42s;
+        animation-delay: -16s;
+    }
+
+    .cloud-3 {
+        top: 44%;
+        left: -160px;
+        transform: scale(0.5);
+        opacity: 0.42;
+        animation-duration: 50s;
+        animation-delay: -27s;
+    }
+
+    @keyframes cloudDrift {
+        from {
+            margin-left: 0;
+        }
+
+        to {
+            margin-left: calc(100vw + 320px);
+        }
+    }
+
+    /* distant cartoon hills */
+
+    .hill {
+        position: absolute;
+
+        bottom: -105px;
+
+        width: 390px;
+        height: 190px;
+
+        border: 3px solid rgba(23, 27, 37, 0.7);
+        border-radius: 50% 50% 0 0;
+
+        background: rgba(100, 189, 104, 0.48);
+    }
+
+    .hill-1 {
+        left: -150px;
+        transform: rotate(-3deg);
+    }
+
+    .hill-2 {
+        right: -160px;
+        bottom: -120px;
+        background: rgba(77, 158, 82, 0.32);
+        transform: rotate(4deg);
+    }
+
+    /* subtle comic dots */
+
+    .dot-field {
+        position: absolute;
+        inset: 0;
+
+        opacity: 0.17;
+
+        background-image:
+            radial-gradient(
+                circle,
+                var(--ink) 1px,
+                transparent 1.5px
+            );
+
+        background-size: 24px 24px;
+
+        mask-image:
+            linear-gradient(
+                to bottom,
+                transparent,
+                black 18%,
+                black 75%,
+                transparent
+            );
+    }
+
+    /* =========================================================
+       DECORATIONS
+       ========================================================= */
+
+    .doodle {
+        position: absolute;
+
+        color: var(--ink);
+
+        opacity: 0.75;
+
+        z-index: 1;
+    }
+
+    .doodle-star {
+        width: 28px;
+        height: 28px;
+
+        animation:
+            doodleFloat 4s ease-in-out infinite;
+    }
+
+    .doodle-star::before {
+        content: "✦";
+
+        font-size: 28px;
+        line-height: 28px;
+        font-weight: 900;
+    }
+
+    .doodle-star-1 {
+        top: 18%;
+        left: 8%;
+        transform: rotate(-12deg);
+    }
+
+    .doodle-star-2 {
+        top: 34%;
+        right: 8%;
+
+        color: var(--red);
+
+        transform: scale(0.7) rotate(13deg);
+
+        animation-delay: -1.4s;
+    }
+
+    .doodle-star-3 {
+        bottom: 18%;
+        left: 11%;
+
+        color: var(--yellow);
+
+        transform: scale(0.58) rotate(-15deg);
+
+        animation-delay: -2.4s;
+    }
+
+    .comic-lines {
+        position: absolute;
+
+        width: 46px;
+        height: 46px;
+    }
+
+    .comic-lines::before,
+    .comic-lines::after {
+        content: "";
+
+        position: absolute;
+
+        width: 30px;
+        height: 3px;
+
+        border-radius: 3px;
+
+        background: var(--ink);
+    }
+
+    .comic-lines::before {
+        top: 13px;
+        left: 5px;
+
+        transform: rotate(-32deg);
+    }
+
+    .comic-lines::after {
+        top: 27px;
+        left: 0;
+
+        transform: rotate(-17deg);
+    }
+
+    .comic-lines-1 {
+        top: 23%;
+        right: 3%;
+        transform: rotate(15deg) scale(0.75);
+    }
+
+    .comic-lines-2 {
+        bottom: 23%;
+        right: 7%;
+        transform: rotate(185deg) scale(0.65);
+    }
+
+    @keyframes doodleFloat {
+        0%,
+        100% {
+            translate: 0 0;
+        }
+
+        50% {
+            translate: 0 -7px;
+        }
+    }
+
+    /* =========================================================
+       APP
+       ========================================================= */
+
+    .app {
+        position: relative;
+        z-index: 2;
+
+        min-height: 100svh;
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        padding:
+            max(22px, env(safe-area-inset-top))
+            17px
+            max(25px, env(safe-area-inset-bottom));
+    }
+
+    .content {
+        width: 100%;
+        max-width: 430px;
+
+        flex: 1;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* =========================================================
+       BRAND
+       ========================================================= */
+
+    .brand {
+        position: relative;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        margin-bottom: 16px;
+
+        user-select: none;
+
+        animation:
+            brandAppear
+            0.65s
+            cubic-bezier(0.16, 1, 0.3, 1)
+            both;
+    }
+
+    .brand-name {
+        position: relative;
+
+        color: var(--white);
+
+        font-size: 22px;
+        line-height: 1;
+
+        font-weight: 950;
+        letter-spacing: 0.2em;
+
+        margin-right: -0.2em;
+
+        text-shadow:
+            2px 3px 0 var(--ink);
+    }
+
+    .brand-name::before,
+    .brand-name::after {
+        content: "✦";
+
+        position: absolute;
+
+        top: 50%;
+
+        color: var(--yellow);
+
+        font-size: 12px;
+
+        text-shadow:
+            1px 1px 0 var(--ink);
+    }
+
+    .brand-name::before {
+        left: -25px;
+        transform: translateY(-50%) rotate(-12deg);
+    }
+
+    .brand-name::after {
+        right: -25px;
+        transform: translateY(-50%) rotate(12deg);
+    }
+
+    .brand-subtitle {
+        margin-top: 7px;
+
+        color: var(--ink);
+
+        font-size: 9px;
+        line-height: 1;
+
+        font-weight: 850;
+        letter-spacing: 0.19em;
+
+        text-transform: uppercase;
+    }
+
+    @keyframes brandAppear {
+        from {
+            opacity: 0;
+            transform: translateY(-12px) scale(0.94);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* =========================================================
+       LOADING
+       ========================================================= */
+
+    .state {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        text-align: center;
+    }
+
+    .loading-state {
+        animation:
+            stateAppear
+            0.45s
+            ease
+            both;
+    }
+
+    .loading-badge {
+        width: 76px;
+        height: 76px;
+
+        display: grid;
+        place-items: center;
+
+        margin-bottom: 20px;
+
+        border: 3px solid var(--ink);
+        border-radius: 25px;
+
+        background: var(--cream);
+
+        box-shadow: var(--shadow);
+
+        animation:
+            loadingBounce
+            2.1s
+            ease-in-out
+            infinite;
+    }
+
+    .loading-badge::before {
+        content: "";
+
+        width: 26px;
+        height: 26px;
+
+        border: 4px solid rgba(23, 27, 37, 0.16);
+        border-top-color: var(--blue);
+
+        border-radius: 50%;
+
+        animation:
+            spin
+            0.8s
+            linear
+            infinite;
+    }
+
+    .state-title {
+        margin: 0;
+
+        font-size: 19px;
+        line-height: 1.15;
+
+        font-weight: 850;
+        letter-spacing: -0.025em;
+    }
+
+    .state-description {
+        max-width: 280px;
+
+        margin: 9px 0 0;
+
+        color: var(--ink-soft);
+
+        font-size: 12px;
+        line-height: 1.5;
+
+        font-weight: 550;
+    }
+
+    @keyframes loadingBounce {
+        0%,
+        100% {
+            transform: translateY(0) rotate(-2deg);
+        }
+
+        50% {
+            transform: translateY(-5px) rotate(2deg);
+        }
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes stateAppear {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* =========================================================
+       ERROR
+       ========================================================= */
+
+    .error-state {
+        display: none;
+    }
+
+    .error-icon {
+        width: 70px;
+        height: 70px;
+
+        display: grid;
+        place-items: center;
+
+        margin-bottom: 20px;
+
+        border: 3px solid var(--ink);
+        border-radius: 23px;
+
+        background: var(--red);
+
+        box-shadow: var(--shadow);
+    }
+
+    .error-icon svg {
+        width: 31px;
+        height: 31px;
+    }
+
+    .retry-button {
+        margin-top: 23px;
+
+        padding: 13px 22px;
+
+        border: 3px solid var(--ink);
+        border-radius: 15px;
+
+        color: var(--white);
+        background: var(--blue);
+
+        font-size: 12px;
+        font-weight: 850;
+
+        cursor: pointer;
+
+        box-shadow:
+            0 4px 0 var(--ink);
+
+        transition:
+            transform 0.15s ease,
+            box-shadow 0.15s ease;
+    }
+
+    .retry-button:active {
+        transform: translateY(3px);
+        box-shadow: 0 1px 0 var(--ink);
+    }
+
+    /* =========================================================
+       PLAYER CARD
+       ========================================================= */
+
+    .profile-card {
+        position: relative;
+
+        width: 100%;
+
+        border: 3px solid var(--ink);
+        border-radius: 31px;
+
+        background:
+            linear-gradient(
+                145deg,
+                rgba(255, 255, 255, 0.98),
+                rgba(255, 248, 233, 0.98)
+            );
+
+        box-shadow: var(--shadow);
+
+        overflow: hidden;
+
+        animation:
+            cardAppear
+            0.72s
+            cubic-bezier(0.16, 1, 0.3, 1)
+            both;
+    }
+
+    .profile-card::before {
+        content: "";
+
+        position: absolute;
+
+        top: -90px;
+        right: -80px;
+
+        width: 220px;
+        height: 220px;
+
+        border-radius: 50%;
+
+        background:
+            rgba(120, 203, 237, 0.23);
+
+        pointer-events: none;
+    }
+
+    .profile-card::after {
+        content: "";
+
+        position: absolute;
+
+        bottom: -105px;
+        left: -90px;
+
+        width: 230px;
+        height: 180px;
+
+        border-radius: 50%;
+
+        background:
+            rgba(100, 189, 104, 0.14);
+
+        pointer-events: none;
+    }
+
+    .card-content {
+        position: relative;
+        z-index: 2;
+
+        padding: 21px 18px 17px;
+    }
+
+    /* top sticker */
+
+    .profile-label {
+        position: relative;
+
+        width: max-content;
+
+        margin: 0 auto 15px;
+
+        padding: 7px 12px 6px;
+
+        border: 2px solid var(--ink);
+        border-radius: 11px;
+
+        color: var(--ink);
+
+        background: var(--yellow);
+
+        font-size: 8px;
+        line-height: 1;
+
+        font-weight: 950;
+        letter-spacing: 0.14em;
+
+        box-shadow:
+            2px 3px 0 var(--ink);
+
+        transform: rotate(-1.5deg);
+
+        animation:
+            stickerAppear
+            0.65s
+            0.08s
+            cubic-bezier(0.16, 1, 0.3, 1)
+            both;
+    }
+
+    .profile-label::before {
+        content: "";
+
+        position: absolute;
+
+        left: -6px;
+        top: 50%;
+
+        width: 5px;
+        height: 5px;
+
+        border-radius: 50%;
+
+        background: var(--red);
+        border: 1px solid var(--ink);
+    }
+
+    .profile-label::after {
+        content: "";
+
+        position: absolute;
+
+        right: -7px;
+        top: 25%;
+
+        width: 7px;
+        height: 7px;
+
+        border-radius: 50%;
+
+        background: var(--blue);
+        border: 1px solid var(--ink);
+    }
+
+    @keyframes stickerAppear {
+        from {
+            opacity: 0;
+            transform: translateY(-7px) rotate(-7deg) scale(0.8);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) rotate(-1.5deg) scale(1);
+        }
+    }
+
+    /* =========================================================
+       AVATAR
+       ========================================================= */
+
+    .avatar-zone {
+        position: relative;
+
+        width: 138px;
+        height: 138px;
+
+        margin: 0 auto 17px;
+
+        animation:
+            avatarAppear
+            0.75s
+            0.12s
+            cubic-bezier(0.16, 1, 0.3, 1)
+            both;
+    }
+
+    .avatar-shadow {
+        position: absolute;
+
+        left: 11px;
+        bottom: 2px;
+
+        width: 116px;
+        height: 26px;
+
+        border-radius: 50%;
+
+        background: rgba(23, 27, 37, 0.2);
+
+        filter: blur(5px);
+
+        transform: rotate(-2deg);
+    }
+
+    .avatar-frame {
+        position: absolute;
+        inset: 3px;
+
+        padding: 5px;
+
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+
+        background:
+            linear-gradient(
+                145deg,
+                var(--blue),
+                #69c6e9
+            );
+
+        box-shadow:
+            4px 6px 0 var(--ink),
+            0 11px 25px rgba(28, 67, 91, 0.22);
+    }
+
+    .avatar-frame::before {
+        content: "";
+
+        position: absolute;
+
+        inset: -8px;
+
+        border: 2px dashed rgba(23, 27, 37, 0.38);
+        border-radius: 50%;
+
+        transform: rotate(9deg);
+    }
+
+    .avatar-inner {
+        width: 100%;
+        height: 100%;
+
+        display: grid;
+        place-items: center;
+
+        overflow: hidden;
+
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+
+        background:
+            linear-gradient(
+                145deg,
+                #ece8db,
+                #d6d1c4
+            );
+    }
+
+    .avatar {
+        width: 100%;
+        height: 100%;
+
+        display: block;
+
+        object-fit: cover;
+
+        opacity: 0;
+
+        transition:
+            opacity 0.3s ease,
+            transform 0.35s ease;
+    }
+
+    .avatar.loaded {
+        opacity: 1;
+    }
+
+    .avatar-fallback {
+        display: none;
+
+        width: 100%;
+        height: 100%;
+
+        align-items: center;
+        justify-content: center;
+
+        color: var(--white);
+
+        background:
+            linear-gradient(
+                145deg,
+                var(--blue),
+                var(--green)
+            );
+
+        font-size: 39px;
+        line-height: 1;
+
+        font-weight: 950;
+
+        text-shadow:
+            2px 3px 0 var(--ink);
+    }
+
+    .avatar-fallback.visible {
+        display: flex;
+    }
+
+    /* Telegram badge */
+
+    .telegram-badge {
+        position: absolute;
+
+        right: 1px;
+        bottom: 6px;
+
+        width: 32px;
+        height: 32px;
+
+        display: grid;
+        place-items: center;
+
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+
+        color: var(--white);
+        background: #229ed9;
+
+        box-shadow:
+            3px 3px 0 var(--ink);
+
+        transform: rotate(7deg);
+
+        z-index: 4;
+    }
+
+    .telegram-badge svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* little star */
+
+    .avatar-star {
+        position: absolute;
+
+        top: -1px;
+        left: -5px;
+
+        width: 31px;
+        height: 31px;
+
+        display: grid;
+        place-items: center;
+
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+
+        color: var(--ink);
+        background: var(--yellow);
+
+        font-size: 17px;
+        font-weight: 950;
+
+        box-shadow:
+            2px 3px 0 var(--ink);
+
+        transform: rotate(-12deg);
+
+        z-index: 4;
+    }
+
+    @keyframes avatarAppear {
+        from {
+            opacity: 0;
+            transform: translateY(15px) scale(0.76) rotate(-4deg);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotate(0);
+        }
+    }
+
+    /* =========================================================
+       IDENTITY
+       ========================================================= */
+
+    .identity {
+        text-align: center;
+
+        animation:
+            fadeUp
+            0.6s
+            0.22s
+            cubic-bezier(0.16, 1, 0.3, 1)
+            both;
+    }
+
+    .nickname {
+        max-width: 100%;
+
+        margin: 0;
+
+        color: var(--ink);
+
+        font-size: clamp(28px, 8vw, 36px);
+        line-height: 1.05;
+
+        font-weight: 900;
+
+        letter-spacing: -0.055em;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .player-id {
+        display: inline-flex;
+
+        margin-top: 8px;
+
+        padding: 6px 10px;
+
+        border: 2px solid var(--ink);
+        border-radius: 9px;
+
+        color: var(--white);
+        background: var(--ink);
+
+        font-size: 9px;
+        line-height: 1;
+
+        font-weight: 900;
+        letter-spacing: 0.17em;
+    }
+
+    /* =========================================================
+       POINTS
+       ========================================================= */
+
+    .points-area {
+        position: relative;
+
+        display: flex;
+        justify-content: center;
+
+        margin: 21px 0 18px;
+
+        animation:
+            fadeUp
+            0.6s
+            0.3s
+            cubic-bezier(0.16, 1, 0.3, 1)
+            both;
+    }
+
+    .points-card {
+        position: relative;
+
+        min-width: 210px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 13px;
+
+        padding: 13px 20px 13px 14px;
+
+        border: 3px solid var(--ink);
+        border-radius: 19px;
+
+        background: var(--blue);
+
+        box-shadow:
+            4px 5px 0 var(--ink);
+
+        transform: rotate(-0.6deg);
+
+        transition:
+            transform 0.2s ease;
+    }
+
+    .points-card:active {
+        transform:
+            rotate(-0.6deg)
+            translateY(2px);
+    }
+
+    .points-card::before {
+        content: "";
+
+        position: absolute;
+
+        width: 10px;
+        height: 10px;
+
+        top: -8px;
+        right: 26px;
+
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+
+        background: var(--red);
+    }
+
+    .points-icon {
+        width: 40px;
+        height: 40px;
+
+        flex: 0 0 40px;
+
+        display: grid;
+        place-items: center;
+
+        border: 3px solid var(--ink);
+        border-radius: 13px;
+
+        color: var(--ink);
+        background: var(--yellow);
+
+        box-shadow:
+            2px 3px 0 var(--ink);
+
+        transform: rotate(-5deg);
+    }
+
+    .points-icon svg {
+        width: 21px;
+        height: 21px;
+    }
+
+    .points-data {
+        min-width: 0;
+    }
+
+    .points-value {
+        margin: 0;
+
+        color: var(--white);
+
+        font-size: 28px;
+        line-height: 0.95;
+
+        font-weight: 950;
+
+        letter-spacing: -0.045em;
+
+        text-shadow:
+            2px 2px 0 var(--ink);
+    }
+
+    .points-label {
+        margin-top: 6px;
+
+        color: var(--white);
+
+        font-size: 8px;
+        line-height: 1;
+
+        font-weight: 900;
+        letter-spacing: 0.19em;
+
+        text-shadow:
+            1px 1px 0 var(--ink);
+    }
+
+    /* speech bubble */
+
+    .points-bubble {
+        position: absolute;
+
+        right: -3px;
+        bottom: -18px;
+
+        padding: 5px 9px 5px;
+
+        border: 2px solid var(--ink);
+        border-radius: 10px;
+
+        color: var(--ink);
+
+        background: var(--cream);
+
+        font-size: 8px;
+        line-height: 1;
+
+        font-weight: 900;
+
+        box-shadow:
+            2px 2px 0 var(--ink);
+
+        transform: rotate(4deg);
+
+        z-index: 4;
+    }
+
+    .points-bubble::before {
+        content: "";
+
+        position: absolute;
+
+        left: 7px;
+        bottom: -7px;
+
+        width: 8px;
+        height: 8px;
+
+        border-right: 2px solid var(--ink);
+        border-bottom: 2px solid var(--ink);
+
+        background: var(--cream);
+
+        transform: skew(-15deg) rotate(20deg);
+    }
+
+    /* =========================================================
+       ACCOUNT DETAILS
+       ========================================================= */
+
+    .details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        border-top: 2px solid rgba(23, 27, 37, 0.16);
+        border-bottom: 2px solid rgba(23, 27, 37, 0.16);
+
+        animation:
+            fadeUp
+            0.6s
+            0.38s
+            cubic-bezier(0.16, 1, 0.3, 1)
+            both;
+    }
+
+    .detail {
+        min-width: 0;
+
+        padding: 13px 11px;
+    }
+
+    .detail + .detail {
+        border-left: 2px solid rgba(23, 27, 37, 0.16);
+    }
+
+    .detail-label {
+        margin-bottom: 7px;
+
+        color: #737986;
+
+        font-size: 8px;
+        line-height: 1;
+
+        font-weight: 900;
+        letter-spacing: 0.15em;
+
+        text-transform: uppercase;
+    }
+
+    .detail-value {
+        display: flex;
+        align-items: center;
+
+        gap: 7px;
+
+        min-width: 0;
+
+        color: var(--ink);
+
+        font-size: 11px;
+        line-height: 1.2;
+
+        font-weight: 800;
+    }
+
+    .detail-value > span:last-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .telegram-icon {
+        width: 21px;
+        height: 21px;
+
+        flex: 0 0 21px;
+
+        display: grid;
+        place-items: center;
+
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+
+        color: var(--white);
+        background: #229ed9;
+
+        box-shadow:
+            1px 2px 0 var(--ink);
+    }
+
+    .telegram-icon svg {
+        width: 11px;
+        height: 11px;
+    }
+
+    .connected-dot {
+        width: 9px;
+        height: 9px;
+
+        flex: 0 0 9px;
+
+        border: 1.5px solid var(--ink);
+        border-radius: 50%;
+
+        background: var(--green);
+
+        box-shadow:
+            1px 1px 0 var(--ink);
+    }
+
+    /* =========================================================
+       FOOTER
+       ========================================================= */
+
+    .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 7px;
+
+        margin-top: 13px;
+
+        color: #858a96;
+
+        font-size: 8px;
+        line-height: 1;
+
+        font-weight: 800;
+        letter-spacing: 0.13em;
+
+        text-transform: uppercase;
+
+        animation:
+            fadeIn
+            0.6s
+            0.55s
+            ease
+            both;
+    }
+
+    .footer-dot {
+        width: 4px;
+        height: 4px;
+
+        border-radius: 50%;
+
+        background: var(--red);
+    }
+
+    /* =========================================================
+       ANIMATION
+       ========================================================= */
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes cardAppear {
+        from {
+            opacity: 0;
+            transform:
+                translateY(25px)
+                scale(0.95)
+                rotate(0.8deg);
+        }
+
+        to {
+            opacity: 1;
+            transform:
+                translateY(0)
+                scale(1)
+                rotate(0);
+        }
+    }
+
+    /* =========================================================
+       MOBILE
+       ========================================================= */
+
+    @media (max-height: 700px) {
+        .app {
+            padding-top:
+                max(13px, env(safe-area-inset-top));
+        }
+
+        .brand {
+            margin-bottom: 10px;
+        }
+
+        .brand-name {
+            font-size: 18px;
+        }
+
+        .card-content {
+            padding-top: 16px;
+            padding-bottom: 13px;
+        }
+
+        .profile-label {
+            margin-bottom: 10px;
+        }
+
+        .avatar-zone {
+            width: 108px;
+            height: 108px;
+
+            margin-bottom: 12px;
+        }
+
+        .avatar-shadow {
+            width: 90px;
+            left: 9px;
+        }
+
+        .telegram-badge {
+            width: 28px;
+            height: 28px;
+
+            right: 0;
+            bottom: 3px;
+        }
+
+        .telegram-badge svg {
+            width: 13px;
+            height: 13px;
+        }
+
+        .avatar-star {
+            width: 27px;
+            height: 27px;
+            font-size: 14px;
+        }
+
+        .nickname {
+            font-size: 27px;
+        }
+
+        .points-area {
+            margin-top: 16px;
+            margin-bottom: 14px;
+        }
+
+        .points-card {
+            padding-top: 11px;
+            padding-bottom: 11px;
+        }
+
+        .detail {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .card-footer {
+            margin-top: 9px;
+        }
+    }
+
+    @media (max-width: 350px) {
+        .app {
+            padding-left: 11px;
+            padding-right: 11px;
+        }
+
+        .card-content {
+            padding-left: 13px;
+            padding-right: 13px;
+        }
+
+        .nickname {
+            font-size: 25px;
+        }
+
+        .points-card {
+            min-width: 190px;
+        }
+
+        .doodle-star-1,
+        .doodle-star-3,
+        .comic-lines-2 {
+            display: none;
+        }
+    }
+
+    @media (min-width: 600px) {
+        .app {
+            padding-left: 28px;
+            padding-right: 28px;
+        }
+
+        .profile-card {
+            border-radius: 34px;
+        }
+
+        .card-content {
+            padding: 25px 25px 20px;
+        }
+    }
+
+    /* =========================================================
+       REDUCED MOTION
+       ========================================================= */
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<!-- =========================================================
+     CARTOON BACKGROUND
+     ========================================================= -->
+
+<div class="world" aria-hidden="true">
+    <div class="sky-glow"></div>
+    <div class="sun"></div>
+
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+
+    <div class="hill hill-1"></div>
+    <div class="hill hill-2"></div>
+
+    <div class="dot-field"></div>
+
+    <div class="doodle doodle-star doodle-star-1"></div>
+    <div class="doodle doodle-star doodle-star-2"></div>
+    <div class="doodle doodle-star doodle-star-3"></div>
+
+    <div class="doodle comic-lines comic-lines-1"></div>
+    <div class="doodle comic-lines comic-lines-2"></div>
+</div>
+
+
+<!-- =========================================================
+     APP
+     ========================================================= -->
+
+<main class="app">
+
+    <header class="brand">
+        <div class="brand-name">TYAGA</div>
+        <div class="brand-subtitle">Player Profile</div>
+    </header>
+
+
+    <section class="content">
+
+        <!-- =================================================
+             LOADING
+             ================================================= -->
+
+        <div
+            class="state loading-state"
+            id="loadingState"
+        >
+            <div
+                class="loading-badge"
+                aria-hidden="true"
+            ></div>
+
+            <h1 class="state-title">
+                Connecting to Telegram...
+            </h1>
+
+            <p class="state-description">
+                Getting your player card ready.
+            </p>
+        </div>
+
+
+        <!-- =================================================
+             ERROR
+             ================================================= -->
+
+        <div
+            class="state error-state"
+            id="errorState"
+        >
+            <div
+                class="error-icon"
+                aria-hidden="true"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="9"
+                    ></circle>
+
+                    <path d="M12 7v5"></path>
+                    <path d="M12 16.5h.01"></path>
+                </svg>
+            </div>
+
+            <h1 class="state-title">
+                Something went wrong
+            </h1>
+
+            <p
+                class="state-description"
+                id="errorDescription"
+            >
+                Please reopen the Mini App and try again.
+            </p>
+
+            <button
+                type="button"
+                class="retry-button"
+                id="retryButton"
+            >
+                Try Again
+            </button>
+        </div>
+
+
+        <!-- =================================================
+             PLAYER CARD
+             ================================================= -->
+
+        <article
+            class="profile-card"
+            id="profileCard"
+            hidden
+        >
+            <div class="card-content">
+
+                <div class="profile-label">
+                    ✦ PLAYER PROFILE ✦
+                </div>
+
+
+                <!-- Avatar -->
+
+                <div class="avatar-zone">
+
+                    <div class="avatar-shadow"></div>
+
+                    <div class="avatar-frame">
+                        <div class="avatar-inner">
+
+                            <img
+                                id="avatar"
+                                class="avatar"
+                                alt="Player avatar"
+                            >
+
+                            <div
+                                id="avatarFallback"
+                                class="avatar-fallback"
+                                aria-hidden="true"
+                            >
+                                ?
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div
+                        class="avatar-star"
+                        aria-hidden="true"
+                    >
+                        ✦
+                    </div>
+
+
+                    <div
+                        class="telegram-badge"
+                        title="Telegram connected"
+                        aria-label="Telegram connected"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                        >
+                            <path
+                                d="M21.8 3.2L18.7 20c-.24 1.2-.88 1.5-1.78.94l-4.9-3.61-2.36 2.27c-.26.26-.48.48-.98.48l.35-4.98 9.07-8.19c.39-.35-.09-.55-.61-.2L6.28 13.5 1.45 12c-1.05-.33-1.07-1.05.22-1.55L20.55 2.99c.89-.33 1.67.2 1.25 1.21z"
+                            ></path>
+                        </svg>
+                    </div>
+
+                </div>
+
+
+                <!-- Identity -->
+
+                <div class="identity">
+
+                    <h1
+                        class="nickname"
+                        id="nickname"
+                    >
+                        Unknown Player
+                    </h1>
+
+                    <div
+                        class="player-id"
+                        id="playerId"
+                    >
+                        PLAYER #—
+                    </div>
+
+                </div>
+
+
+                <!-- Points -->
+
+                <div class="points-area">
+
+                    <div class="points-card">
+
+                        <div
+                            class="points-icon"
+                            aria-hidden="true"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M12 3.5l2.65 5.37 5.93.86-4.29 4.18 1.01 5.91L12 17.03l-5.3 2.79 1.01-5.91-4.29-4.18 5.93-.86L12 3.5z"
+                                ></path>
+                            </svg>
+                        </div>
+
+                        <div class="points-data">
+
+                            <div
+                                class="points-value"
+                                id="points"
+                            >
+                                0
+                            </div>
+
+                            <div class="points-label">
+                                POINTS
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="points-bubble"
+                        aria-hidden="true"
+                    >
+                        nice.
+                    </div>
+
+                </div>
+
+
+                <!-- Account -->
+
+                <div class="details">
+
+                    <div class="detail">
+
+                        <div class="detail-label">
+                            Account
+                        </div>
+
+                        <div class="detail-value">
+
+                            <span
+                                class="telegram-icon"
+                                aria-hidden="true"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        d="M21.8 3.2L18.7 20c-.24 1.2-.88 1.5-1.78.94l-4.9-3.61-2.36 2.27c-.26.26-.48.48-.98.48l.35-4.98 9.07-8.19c.39-.35-.09-.55-.61-.2L6.28 13.5 1.45 12c-1.05-.33-1.07-1.05.22-1.55L20.55 2.99c.89-.33 1.67.2 1.25 1.21z"
+                                    ></path>
+                                </svg>
+                            </span>
+
+                            <span id="provider">
+                                Telegram
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail">
+
+                        <div class="detail-label">
+                            Joined
+                        </div>
+
+                        <div class="detail-value">
+
+                            <span
+                                class="connected-dot"
+                                aria-hidden="true"
+                            ></span>
+
+                            <span id="createdAt">
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Footer -->
+
+                <div class="card-footer">
+
+                    <span>TYAGA</span>
+
+                    <span
+                        class="footer-dot"
+                        aria-hidden="true"
+                    ></span>
+
+                    <span>READY FOR TROUBLE?</span>
+
+                </div>
+
+            </div>
+        </article>
+
+    </section>
+</main>
+
+
+<!-- =========================================================
+     TELEGRAM
+     ========================================================= -->
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+
+<!-- =========================================================
+     APPLICATION
+     ========================================================= -->
+
+<script>
+    (() => {
+        "use strict";
+
+        /*
+         * =====================================================
+         * Configuration
+         * =====================================================
+         */
+
+        const TOKEN_STORAGE_KEY = "tyaga_api_token";
+
+
+        /*
+         * =====================================================
+         * Telegram
+         * =====================================================
+         */
+
+        const tg = window.Telegram?.WebApp;
+
+
+        /*
+         * =====================================================
+         * DOM
+         * =====================================================
+         */
+
+        const loadingState =
+            document.getElementById("loadingState");
+
+        const errorState =
+            document.getElementById("errorState");
+
+        const profileCard =
+            document.getElementById("profileCard");
+
+        const errorDescription =
+            document.getElementById("errorDescription");
+
+        const retryButton =
+            document.getElementById("retryButton");
+
+        const avatar =
+            document.getElementById("avatar");
+
+        const avatarFallback =
+            document.getElementById("avatarFallback");
+
+        const nickname =
+            document.getElementById("nickname");
+
+        const playerId =
+            document.getElementById("playerId");
+
+        const points =
+            document.getElementById("points");
+
+        const provider =
+            document.getElementById("provider");
+
+        const createdAt =
+            document.getElementById("createdAt");
+
+
+        /*
+         * =====================================================
+         * UI state
+         * =====================================================
+         */
+
+        function showLoading() {
+            loadingState.style.display = "flex";
+            errorState.style.display = "none";
+            profileCard.hidden = true;
+        }
+
+
+        function showError(message) {
+            loadingState.style.display = "none";
+            errorState.style.display = "flex";
+            profileCard.hidden = true;
+
+            errorDescription.textContent =
+                message ||
+                "Please reopen the Mini App and try again.";
+        }
+
+
+        function showProfile() {
+            loadingState.style.display = "none";
+            errorState.style.display = "none";
+            profileCard.hidden = false;
+        }
+
+
+        /*
+         * =====================================================
+         * Formatting
+         * =====================================================
+         */
+
+        function formatPoints(value) {
+            const number = Number(value);
+
+            if (!Number.isFinite(number)) {
+                return "0";
+            }
+
+            return new Intl.NumberFormat("en-US")
+                .format(number);
+        }
+
+
+        function formatDate(value) {
+            if (!value) {
+                return "Unknown";
+            }
+
+            const date = new Date(value);
+
+            if (Number.isNaN(date.getTime())) {
+                return "Unknown";
+            }
+
+            return new Intl.DateTimeFormat(
+                "en-US",
+                {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            ).format(date);
+        }
+
+
+        /*
+         * =====================================================
+         * Avatar
+         * =====================================================
+         */
+
+        function setAvatar(url, fallbackName) {
+            avatar.classList.remove("loaded");
+            avatarFallback.classList.remove("visible");
+
+            const fallback =
+                fallbackName
+                    ?.trim()
+                    ?.charAt(0)
+                    ?.toUpperCase() || "?";
+
+            avatarFallback.textContent = fallback;
+
+            if (!url) {
+                avatarFallback.classList.add("visible");
+                return;
+            }
+
+            avatar.onload = () => {
+                avatar.classList.add("loaded");
+            };
+
+            avatar.onerror = () => {
+                avatar.removeAttribute("src");
+                avatar.classList.remove("loaded");
+                avatarFallback.classList.add("visible");
+            };
+
+            avatar.src = url;
+        }
+
+
+        /*
+         * =====================================================
+         * Render player
+         * =====================================================
+         *
+         * IMPORTANT:
+         *
+         * player.id
+         *     = GAME PLAYER ID
+         *
+         * identity.provider_id
+         *     = TELEGRAM PROVIDER ID
+         *
+         * The provider ID is intentionally never displayed.
+         */
+
+        function renderPlayer(data) {
+            const player =
+                data?.player || {};
+
+            const profile =
+                data?.profile || {};
+
+            const identity =
+                data?.identity || {};
+
+
+            /*
+             * Game ID comes ONLY from players.id.
+             */
+
+            const gameId =
+                player.id !== undefined &&
+                player.id !== null &&
+                String(player.id).trim() !== ""
+                    ? String(player.id)
+                    : "—";
+
+
+            /*
+             * Profile nickname.
+             */
+
+            const playerNickname =
+                typeof profile.nickname === "string" &&
+                profile.nickname.trim()
+                    ? profile.nickname.trim()
+                    : "Unknown Player";
+
+
+            /*
+             * Identity provider.
+             */
+
+            const authProvider =
+                typeof identity.provider === "string" &&
+                identity.provider.trim()
+                    ? identity.provider.trim()
+                    : "telegram";
+
+
+            const prettyProvider =
+                authProvider.charAt(0).toUpperCase() +
+                authProvider.slice(1);
+
+
+            /*
+             * Render.
+             */
+
+            nickname.textContent =
+                playerNickname;
+
+            playerId.textContent =
+                `PLAYER #${gameId}`;
+
+            points.textContent =
+                formatPoints(player.points);
+
+            provider.textContent =
+                prettyProvider;
+
+            createdAt.textContent =
+                formatDate(player.created_at);
+
+            setAvatar(
+                profile.avatar_url,
+                playerNickname
+            );
+
+
+            showProfile();
+        }
+
+
+        /*
+         * =====================================================
+         * Authentication
+         * =====================================================
+         */
+
+        async function authenticate() {
+            showLoading();
+
+
+            /*
+             * Telegram WebApp unavailable.
+             */
+
+            if (!tg) {
+                showError(
+                    "Please open this page from Telegram."
+                );
+
+                return;
+            }
+
+
+            try {
+                /*
+                 * Tell Telegram the Mini App is ready.
+                 */
+
+                tg.ready();
+
+
+                /*
+                 * Use as much available WebView space as possible.
+                 */
+
+                if (typeof tg.expand === "function") {
+                    tg.expand();
+                }
+
+
+                /*
+                 * initData is required for server-side
+                 * Telegram signature verification.
+                 */
+
+                if (!tg.initData) {
+                    throw new Error(
+                        "Telegram initialization data is missing."
+                    );
+                }
+
+
+                /*
+                 * Existing backend endpoint.
+                 *
+                 * DO NOT replace this with client-side
+                 * authentication.
+                 */
+
+                const response =
+                    await fetch(
+                        "/auth/telegram",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                initData: tg.initData
+                            })
+                        }
+                    );
+
+
+                /*
+                 * Parse JSON.
+                 */
+
+                let data;
+
+                try {
+                    data =
+                        await response.json();
+                } catch {
+                    throw new Error(
+                        "Invalid server response."
+                    );
+                }
+
+
+                /*
+                 * Backend authentication failed.
+                 */
+
+                if (
+                    !response.ok ||
+                    !data?.success
+                ) {
+                    throw new Error(
+                        "Telegram authentication was rejected."
+                    );
+                }
+
+
+                /*
+                 * Save API session token.
+                 *
+                 * The token is NEVER inserted into the DOM.
+                 */
+
+                if (
+                    typeof data.token === "string" &&
+                    data.token.length > 0
+                ) {
+                    localStorage.setItem(
+                        TOKEN_STORAGE_KEY,
+                        data.token
+                    );
+                }
+
+
+                /*
+                 * Render the actual API response.
+                 */
+
+                renderPlayer(data);
+
+            } catch (error) {
+                /*
+                 * Technical information stays in the console.
+                 * The user receives only a friendly message.
+                 */
+
+                console.error(
+                    "TYAGA authentication error:",
+                    error
+                );
+
+                showError(
+                    "Please reopen the Mini App and try again."
+                );
+            }
+        }
+
+
+        /*
+         * =====================================================
+         * Retry
+         * =====================================================
+         */
+
+        retryButton.addEventListener(
+            "click",
+            authenticate
+        );
+
+
+        /*
+         * =====================================================
+         * Start
+         * =====================================================
+         */
+
+        authenticate();
+
+    })();
+</script>
+```
+
+</body>
+</html>
