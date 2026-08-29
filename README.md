@@ -6,6 +6,8 @@ Backend для **TYAGA** — одиночной игры с соревноват
 
 Сама игра находится за пределами этого репозитория.
 
+<img width="1080" height="720" alt="изображение" src="https://github.com/user-attachments/assets/ebc67f74-2bea-4143-88db-bb59ce98a06f" />
+
 ---
 
 ## 🗺️ Roadmap
