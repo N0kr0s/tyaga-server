@@ -25,8 +25,9 @@ TYAGA SERVER
 │
 ├── 🔐 Авторизация
 │   ├── ✅ Telegram WebApp
-│   ├── 🟡 Twitch
-│   └── ✅ Серверная проверка
+│   ├── 🟡 Web Auth Flow
+│   ├── ⬜ Twitch
+│   └── ✅ Серверная проверка Telegram
 │
 ├── 🌐 API
 │   ├── ✅ Players API
@@ -49,6 +50,7 @@ TYAGA SERVER
     ├── ✅ HTTPS
     ├── ⬜ Rate limiting
     ├── ⬜ Мониторинг
+    ├── ⬜ Автоматические бэкапы
     └── ⬜ Production hardening
 ```
 
@@ -70,13 +72,39 @@ Player
     └── Аватар
 ```
 
-Данные авторизации хранятся отдельно от самого игрока, поэтому система не привязана к одному конкретному способу входа.
+Данные авторизации хранятся отдельно от самого игрока, поэтому аккаунт не привязан к одному конкретному способу входа.
 
 ---
 
 ### 🔑 Авторизация
 
-Telegram WebApp авторизация уже реализована с **серверной проверкой `initData`**.
+Система авторизации строится вокруг единого аккаунта игрока и нескольких возможных способов входа.
+
+Сейчас реализован Telegram WebApp, а также подготовлена отдельная web-структура для дальнейшего добавления других способов авторизации.
+
+```text
+                    ┌──────────────┐
+                    │    TYAGA     │
+                    │    AUTH      │
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼            ▼            ▼
+        📱 Telegram      🌐 Web       🎮 Game
+        WebApp           Auth         Client
+              │            │            │
+              └────────────┼────────────┘
+                           ▼
+                      👤 Player
+                           │
+                           ▼
+                       🔐 Session
+```
+
+#### Telegram WebApp
+
+Telegram Mini App использует серверную проверку `initData`.
 
 ```text
 Telegram WebApp
@@ -86,8 +114,9 @@ Telegram WebApp
 ┌─────────────────┐
 │    TYAGA API    │
 │                 │
-│ Проверка данных │
-│     Telegram    │
+│ HMAC validation │
+│ auth_date       │
+│ Telegram user   │
 └────────┬────────┘
          │
          ▼
@@ -98,6 +127,39 @@ Telegram WebApp
 ```
 
 После успешной авторизации сервер создаёт сессию и выдаёт токен.
+
+---
+
+### 🌐 Web Auth
+
+Для авторизации через браузер подготовлен отдельный flow:
+
+```text
+/auth
+   │
+   ├── Telegram
+   │      │
+   │      ▼
+   │   /telegram
+   │      │
+   │      ├── 📱 Login через Telegram Bot
+   │      │
+   │      └── 🌐 Login Widget
+   │
+   └── Twitch
+          │
+          └── 🚧 В разработке
+```
+
+Текущие страницы:
+
+```text
+https://theseus.tailfff273.ts.net/auth
+https://theseus.tailfff273.ts.net/telegram
+https://theseus.tailfff273.ts.net/telegram/app
+```
+
+Telegram Bot flow уже подготовлен для дальнейшей интеграции.
 
 ---
 
@@ -161,6 +223,8 @@ Achievement
           └── Token
 ```
 
+Токены сессий не хранятся в базе данных в открытом виде — сервер работает с их хешами.
+
 ---
 
 ## 🌐 Архитектура
@@ -214,14 +278,13 @@ Backend работает на собственном Linux-сервере.
 ```text
 tyaga-server/
 │
-├── migrations/
-│   ├── 001_achievements.sql
-│   ├── 002_achievement_conditions.sql
-│   ├── 003_auth.sql
-│   └── 004_one_active_session.sql
-│
 ├── public/
-│   └── index.html
+│   ├── auth/
+│   │   └── index.html
+│   │
+│   └── telegram/
+│       ├── index.html
+│       └── app.html
 │
 ├── src/
 │   ├── middleware/
@@ -242,7 +305,13 @@ tyaga-server/
 │   ├── db.js
 │   └── server.js
 │
+├── migration_001_achievements.sql
+├── migration_002_achievement_conditions.sql
+├── migration_003_auth.sql
+├── migration_003_one_active_session.sql
+│
 ├── .env.example
+├── .gitignore
 ├── package.json
 ├── package-lock.json
 └── schema.sql
@@ -287,13 +356,16 @@ Backend является **источником истины** для данны
 
 * [x] Схема базы данных
 * [x] Система игроков
-* [x] Telegram авторизация
+* [x] Telegram WebApp авторизация
 * [x] Сессии
 * [x] Очки
 * [x] Скины
 * [x] Достижения
-* [x] Публичный HTTPS API
+* [x] Публичный HTTPS-доступ
+* [x] Web Auth страницы
+* [ ] Telegram Login Widget
 * [ ] Twitch авторизация
+* [ ] Единый auth flow для всех провайдеров
 * [ ] Leaderboard
 * [ ] Rate limiting
 * [ ] Production hardening
@@ -304,6 +376,7 @@ Backend является **источником истины** для данны
 
 * [ ] Подключение игры к API
 * [ ] Авторизация игрока из игры
+* [ ] Восстановление сохранённой сессии
 * [ ] Синхронизация прогресса
 * [ ] Синхронизация скинов
 * [ ] Отправка результатов
@@ -313,20 +386,20 @@ Backend является **источником истины** для данны
 
 ## 📊 Текущий статус
 
-| Система              | Статус |
-| -------------------- | :----: |
-| База данных          |   🟢   |
-| Игроки               |   🟢   |
-| Telegram авторизация |   🟢   |
-| Сессии               |   🟢   |
-| Очки                 |   🟢   |
-| Скины                |   🟢   |
-| Достижения           |   🟢   |
-| Публичный API        |   🟢   |
-| Twitch авторизация   |   🟡   |
-| Leaderboard          |    ⚪   |
-| Интеграция с игрой   |    ⚪   |
-| Production hardening |    ⚪   |
-
----
-    
+| Система               | Статус |
+| --------------------- | :----: |
+| База данных           |   🟢   |
+| Игроки                |   🟢   |
+| Telegram WebApp       |   🟢   |
+| Web Auth              |   🟢   |
+| Telegram Login Widget |   🟡   |
+| Telegram Bot Auth     |   🟡   |
+| Сессии                |   🟢   |
+| Очки                  |   🟢   |
+| Скины                 |   🟢   |
+| Достижения            |   🟢   |
+| Публичный HTTPS       |   🟢   |
+| Twitch                |    ⚪   |
+| Leaderboard           |    ⚪   |
+| Интеграция с игрой    |    ⚪   |
+| Production hardening  |    ⚪   |
