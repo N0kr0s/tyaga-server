@@ -59,4 +59,20 @@ const start = async () => {
     }
 };
 
+fastify.get('/telegram/app', async (request, reply) => {
+    return reply.sendFile('telegram/app.html');
+});
+
+fastify.get('/telegram/app/', async (request, reply) => {
+    return reply.sendFile('telegram/app.html');
+});
+
+fastify.get('/auth', async (request, reply) => {
+    return reply.sendFile('auth/index.html');
+});
+
+fastify.get('/telegram', async (request, reply) => {
+    return reply.sendFile('telegram/index.html');
+});
+
 start();

@@ -20,7 +20,7 @@ async function authRoutes(fastify) {
     // ============================================================
 
     fastify.post(
-        '/auth/telegram',
+        '/auth/telegram/app',
         async (request, reply) => {
 
             const body = request.body;

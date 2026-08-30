@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tyaga — Telegram</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: min(420px, 90%);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 8px 0;
+            border: 0;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .bot {
+            background: #229ed9;
+            color: white;
+        }
+
+        .web {
+            background: #333;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Telegram</h1>
+
+    <p>Выберите способ входа</p>
+
+    <button
+        class="bot"
+        onclick="window.location.href='https://t.me/tyaga_game_bot/test2'"
+    >
+        Войти через Telegram-бота
+    </button>
+
+    <button
+        class="web"
+        onclick="return false"
+    >
+        Вход по Web
+    </button>
+
+</div>
+
+</body>
+</html>

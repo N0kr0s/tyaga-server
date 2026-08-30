@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tyaga — Авторизация</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: min(420px, 90%);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 8px 0;
+            border: 0;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .telegram {
+            background: #229ed9;
+            color: white;
+        }
+
+        .twitch {
+            background: #9146ff;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Tyaga</h1>
+
+    <p>Войдите или зарегистрируйтесь</p>
+
+    <button
+        class="telegram"
+        onclick="location.href='/telegram'"
+    >
+        Войти через Telegram
+    </button>
+
+    <button
+        class="twitch"
+        onclick="return false"
+    >
+        Войти через Twitch
+    </button>
+
+</div>
+
+</body>
+</html>
