@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const pool = require('../db');
 
 const {
@@ -7,11 +6,11 @@ const {
 
 const {
     createAuthSession,
+    createAuthSessionWithClient,
     revokeAuthSession,
     getBearerToken,
     requireAuth
 } = require('../services/auth');
-
 
 async function authRoutes(fastify) {
 
@@ -47,7 +46,7 @@ async function authRoutes(fastify) {
             }
 
             // ----------------------------------------------------
-            // Проверяем Telegram initData
+            // Telegram initData
             // ----------------------------------------------------
 
             let telegramAuth;
@@ -56,7 +55,6 @@ async function authRoutes(fastify) {
                 telegramAuth =
                     validateInitData(initData);
             } catch (error) {
-
                 fastify.log.error(error);
 
                 return reply.code(500).send({
@@ -73,15 +71,7 @@ async function authRoutes(fastify) {
             const telegramUser =
                 telegramAuth.user;
 
-            /*
-             * Для identity используем только Telegram user.id.
-             *
-             * username, first_name и т.д. НЕ являются
-             * идентификатором аккаунта.
-             */
-
             const provider = 'telegram';
-
             const providerId =
                 String(telegramUser.id);
 
@@ -93,7 +83,7 @@ async function authRoutes(fastify) {
                 await client.query('BEGIN');
 
                 // ------------------------------------------------
-                // Ищем существующую Telegram identity
+                // Find existing identity
                 // ------------------------------------------------
 
                 const identityResult =
@@ -116,10 +106,6 @@ async function authRoutes(fastify) {
 
                 if (identityResult.rowCount > 0) {
 
-                    // ------------------------------------------------
-                    // Уже зарегистрированный Telegram
-                    // ------------------------------------------------
-
                     playerId =
                         Number(
                             identityResult.rows[0].player_id
@@ -137,13 +123,8 @@ async function authRoutes(fastify) {
                             [playerId]
                         );
 
-                    if (
-                        playerCheck.rowCount === 0
-                    ) {
-
-                        await client.query(
-                            'ROLLBACK'
-                        );
+                    if (playerCheck.rowCount === 0) {
+                        await client.query('ROLLBACK');
 
                         return reply.code(500).send({
                             error: 'identity_player_not_found'
@@ -153,7 +134,7 @@ async function authRoutes(fastify) {
                 } else {
 
                     // ------------------------------------------------
-                    // Новый Telegram пользователь
+                    // Create new player
                     // ------------------------------------------------
 
                     const playerResult =
@@ -161,8 +142,7 @@ async function authRoutes(fastify) {
                             `
                             INSERT INTO players
                             DEFAULT VALUES
-                            RETURNING
-                                id
+                            RETURNING id
                             `
                         );
 
@@ -193,13 +173,10 @@ async function authRoutes(fastify) {
                 }
 
                 // ------------------------------------------------
-                // Telegram → player_profiles
+                // Telegram profile data
                 //
-                // Telegram может только ЗАПОЛНИТЬ отсутствующие
-                // данные.
-                //
-                // Уже существующие nickname/avatar_url
-                // никогда не перезаписываются.
+                // Telegram can fill only missing fields.
+                // Existing custom values are never overwritten.
                 // ------------------------------------------------
 
                 const telegramNickname =
@@ -245,7 +222,7 @@ async function authRoutes(fastify) {
                 );
 
                 // ------------------------------------------------
-                // Получаем игрока
+                // Player
                 // ------------------------------------------------
 
                 const playerResult =
@@ -261,13 +238,8 @@ async function authRoutes(fastify) {
                         [playerId]
                     );
 
-                if (
-                    playerResult.rowCount === 0
-                ) {
-
-                    await client.query(
-                        'ROLLBACK'
-                    );
+                if (playerResult.rowCount === 0) {
+                    await client.query('ROLLBACK');
 
                     return reply.code(500).send({
                         error: 'player_not_found'
@@ -275,10 +247,7 @@ async function authRoutes(fastify) {
                 }
 
                 // ------------------------------------------------
-                // Создаём API auth session
-                //
-                // createAuthSession использует pool,
-                // поэтому здесь используем client.
+                // Create API session
                 // ------------------------------------------------
 
                 const auth =
@@ -288,7 +257,7 @@ async function authRoutes(fastify) {
                     );
 
                 // ------------------------------------------------
-                // Получаем профиль
+                // Profile
                 // ------------------------------------------------
 
                 const profileResult =
@@ -309,12 +278,10 @@ async function authRoutes(fastify) {
                         avatar_url: null
                     };
 
-                await client.query(
-                    'COMMIT'
-                );
+                await client.query('COMMIT');
 
                 // ------------------------------------------------
-                // Ответ клиенту
+                // Response
                 // ------------------------------------------------
 
                 return {
@@ -340,23 +307,14 @@ async function authRoutes(fastify) {
             } catch (error) {
 
                 try {
-                    await client.query(
-                        'ROLLBACK'
-                    );
+                    await client.query('ROLLBACK');
                 } catch (rollbackError) {
-                    fastify.log.error(
-                        rollbackError
-                    );
+                    fastify.log.error(rollbackError);
                 }
 
                 fastify.log.error(error);
 
-                /*
-                 * UNIQUE violation.
-                 */
-
                 if (error.code === '23505') {
-
                     return reply.code(409).send({
                         error: 'telegram_identity_already_exists'
                     });
@@ -367,15 +325,13 @@ async function authRoutes(fastify) {
                 });
 
             } finally {
-
                 client.release();
             }
         }
     );
 
-
     // ============================================================
-    // CURRENT AUTHENTICATED PLAYER
+    // CURRENT PLAYER
     // ============================================================
 
     fastify.get(
@@ -385,7 +341,7 @@ async function authRoutes(fastify) {
         },
         async (request, reply) => {
 
-            const result =
+            const playerResult =
                 await pool.query(
                     `
                     SELECT
@@ -398,10 +354,7 @@ async function authRoutes(fastify) {
                     [request.playerId]
                 );
 
-            if (
-                result.rowCount === 0
-            ) {
-
+            if (playerResult.rowCount === 0) {
                 return reply.code(404).send({
                     error: 'player_not_found'
                 });
@@ -435,7 +388,7 @@ async function authRoutes(fastify) {
 
             return {
                 player:
-                    result.rows[0],
+                    playerResult.rows[0],
 
                 profile:
                     profileResult.rows[0] || {
@@ -448,7 +401,6 @@ async function authRoutes(fastify) {
             };
         }
     );
-
 
     // ============================================================
     // LOGOUT
@@ -464,9 +416,7 @@ async function authRoutes(fastify) {
             const token =
                 getBearerToken(request);
 
-            await revokeAuthSession(
-                token
-            );
+            await revokeAuthSession(token);
 
             return {
                 success: true
@@ -474,11 +424,8 @@ async function authRoutes(fastify) {
         }
     );
 
-
     // ============================================================
     // TEMPORARY TEST AUTH
-    //
-    // Удалим после успешного Telegram теста.
     // ============================================================
 
     fastify.post(
@@ -486,15 +433,12 @@ async function authRoutes(fastify) {
         async (request, reply) => {
 
             const playerId =
-                Number(
-                    request.params.playerId
-                );
+                Number(request.params.playerId);
 
             if (
                 !Number.isInteger(playerId) ||
                 playerId <= 0
             ) {
-
                 return reply.code(400).send({
                     error: 'invalid_player_id'
                 });
@@ -511,19 +455,14 @@ async function authRoutes(fastify) {
                     [playerId]
                 );
 
-            if (
-                playerResult.rowCount === 0
-            ) {
-
+            if (playerResult.rowCount === 0) {
                 return reply.code(404).send({
                     error: 'player_not_found'
                 });
             }
 
             const auth =
-                await createAuthSession(
-                    playerId
-                );
+                await createAuthSession(playerId);
 
             return {
                 success: true,
@@ -540,66 +479,5 @@ async function authRoutes(fastify) {
         }
     );
 }
-
-
-// ================================================================
-// CREATE AUTH SESSION INSIDE EXISTING TRANSACTION
-// ================================================================
-
-async function createAuthSessionWithClient(
-    client,
-    playerId
-) {
-
-    const AUTH_SESSION_DAYS =
-        Number(
-            process.env.AUTH_SESSION_DAYS || 30
-        );
-
-    const token =
-        crypto
-            .randomBytes(32)
-            .toString('hex');
-
-    const tokenHash =
-        crypto
-            .createHash('sha256')
-            .update(token)
-            .digest('hex');
-
-    const result =
-        await client.query(
-            `
-            INSERT INTO auth_sessions (
-                player_id,
-                token_hash,
-                expires_at
-            )
-            VALUES (
-                $1,
-                $2,
-                NOW() + ($3 * INTERVAL '1 day')
-            )
-            RETURNING
-                id,
-                player_id,
-                created_at,
-                expires_at
-            `,
-            [
-                playerId,
-                tokenHash,
-                AUTH_SESSION_DAYS
-            ]
-        );
-
-    return {
-        token,
-
-        session:
-            result.rows[0]
-    };
-}
-
 
 module.exports = authRoutes;

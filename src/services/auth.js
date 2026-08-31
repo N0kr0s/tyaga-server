@@ -5,13 +5,9 @@ const AUTH_SESSION_DAYS = Number(
     process.env.AUTH_SESSION_DAYS || 30
 );
 
-const TELEGRAM_AUTH_MAX_AGE_SECONDS = Number(
-    process.env.TELEGRAM_AUTH_MAX_AGE_SECONDS || 600
-);
-
-// --------------------------------------------------
-// API session tokens
-// --------------------------------------------------
+// ============================================================
+// TOKEN HELPERS
+// ============================================================
 
 function generateToken() {
     return crypto.randomBytes(32).toString('hex');
@@ -24,9 +20,9 @@ function hashToken(token) {
         .digest('hex');
 }
 
-// --------------------------------------------------
-// Create API session
-// --------------------------------------------------
+// ============================================================
+// CREATE AUTH SESSION
+// ============================================================
 
 async function createAuthSession(playerId) {
     const token = generateToken();
@@ -63,14 +59,56 @@ async function createAuthSession(playerId) {
     };
 }
 
-// --------------------------------------------------
-// Authenticate bearer token
-// --------------------------------------------------
+// ============================================================
+// CREATE AUTH SESSION USING EXISTING DB CLIENT
+// ============================================================
+
+async function createAuthSessionWithClient(
+    client,
+    playerId
+) {
+    const token = generateToken();
+    const tokenHash = hashToken(token);
+
+    const result = await client.query(
+        `
+        INSERT INTO auth_sessions (
+            player_id,
+            token_hash,
+            expires_at
+        )
+        VALUES (
+            $1,
+            $2,
+            NOW() + ($3 * INTERVAL '1 day')
+        )
+        RETURNING
+            id,
+            player_id,
+            created_at,
+            expires_at
+        `,
+        [
+            playerId,
+            tokenHash,
+            AUTH_SESSION_DAYS
+        ]
+    );
+
+    return {
+        token,
+        session: result.rows[0]
+    };
+}
+
+// ============================================================
+// AUTHENTICATE BEARER TOKEN
+// ============================================================
 
 async function authenticateToken(token) {
     if (
         typeof token !== 'string' ||
-        token.length !== 64
+        !/^[0-9a-f]{64}$/i.test(token)
     ) {
         return null;
     }
@@ -80,12 +118,12 @@ async function authenticateToken(token) {
     const result = await pool.query(
         `
         SELECT
-            s.id AS session_id,
-            s.player_id,
-            s.expires_at
-        FROM auth_sessions s
-        WHERE s.token_hash = $1
-          AND s.expires_at > NOW()
+            id AS session_id,
+            player_id,
+            expires_at
+        FROM auth_sessions
+        WHERE token_hash = $1
+          AND expires_at > NOW()
         `,
         [tokenHash]
     );
@@ -94,26 +132,28 @@ async function authenticateToken(token) {
         return null;
     }
 
+    const session = result.rows[0];
+
     await pool.query(
         `
         UPDATE auth_sessions
         SET last_used_at = NOW()
         WHERE id = $1
         `,
-        [result.rows[0].session_id]
+        [session.session_id]
     );
 
-    return result.rows[0];
+    return session;
 }
 
-// --------------------------------------------------
-// Revoke bearer token
-// --------------------------------------------------
+// ============================================================
+// REVOKE AUTH SESSION
+// ============================================================
 
 async function revokeAuthSession(token) {
     if (
         typeof token !== 'string' ||
-        token.length !== 64
+        !/^[0-9a-f]{64}$/i.test(token)
     ) {
         return false;
     }
@@ -131,9 +171,9 @@ async function revokeAuthSession(token) {
     return result.rowCount > 0;
 }
 
-// --------------------------------------------------
-// Extract bearer token
-// --------------------------------------------------
+// ============================================================
+// EXTRACT BEARER TOKEN
+// ============================================================
 
 function getBearerToken(request) {
     const header = request.headers.authorization;
@@ -145,12 +185,20 @@ function getBearerToken(request) {
         return null;
     }
 
-    return header.slice(7).trim();
+    const token = header
+        .slice(7)
+        .trim();
+
+    if (!token) {
+        return null;
+    }
+
+    return token;
 }
 
-// --------------------------------------------------
-// Fastify auth preHandler
-// --------------------------------------------------
+// ============================================================
+// FASTIFY AUTH MIDDLEWARE
+// ============================================================
 
 async function requireAuth(request, reply) {
     const token = getBearerToken(request);
@@ -169,12 +217,20 @@ async function requireAuth(request, reply) {
         });
     }
 
-    request.playerId = Number(auth.player_id);
-    request.authSessionId = Number(auth.session_id);
+    request.playerId =
+        Number(auth.player_id);
+
+    request.authSessionId =
+        Number(auth.session_id);
 }
+
+// ============================================================
+// EXPORTS
+// ============================================================
 
 module.exports = {
     createAuthSession,
+    createAuthSessionWithClient,
     authenticateToken,
     revokeAuthSession,
     getBearerToken,
