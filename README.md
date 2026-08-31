@@ -25,9 +25,10 @@ TYAGA SERVER
 │
 ├── 🔐 Авторизация
 │   ├── ✅ Telegram WebApp
-│   ├── 🟡 Web Auth Flow
-│   ├── ⬜ Twitch
-│   └── ✅ Серверная проверка Telegram
+│   ├── ✅ Web Auth Flow
+│   ├── 🟡 Telegram Bot Auth
+│   ├── ⬜ Telegram Login Widget
+│   └── ⬜ Twitch
 │
 ├── 🌐 API
 │   ├── ✅ Players API
@@ -45,8 +46,9 @@ TYAGA SERVER
 │
 └── 🚀 Инфраструктура
     ├── ✅ Собственный сервер
-    ├── ✅ Tailscale
-    ├── ✅ Tailscale Funnel
+    ├── ✅ Reverse tunnel
+    ├── ✅ VPS
+    ├── ✅ Nginx
     ├── ✅ HTTPS
     ├── ⬜ Rate limiting
     ├── ⬜ Мониторинг
@@ -80,29 +82,28 @@ Player
 
 Система авторизации строится вокруг единого аккаунта игрока и нескольких возможных способов входа.
 
-Сейчас реализован Telegram WebApp, а также подготовлена отдельная web-структура для дальнейшего добавления других способов авторизации.
+На данный момент полностью работает Telegram WebApp и браузерный Web Auth flow. Архитектура авторизации подготовлена для дальнейшего подключения Telegram Login Widget и Twitch.
 
 ```text
-                    ┌──────────────┐
-                    │    TYAGA     │
-                    │    AUTH      │
-                    └──────┬───────┘
-                           │
-              ┌────────────┼────────────┐
-              │            │            │
-              ▼            ▼            ▼
-        📱 Telegram      🌐 Web       🎮 Game
-        WebApp           Auth         Client
-              │            │            │
-              └────────────┼────────────┘
-                           ▼
-                      👤 Player
-                           │
-                           ▼
-                       🔐 Session
+                         TYAGA AUTH
+                             │
+                ┌────────────┼────────────┐
+                │            │            │
+                ▼            ▼            ▼
+          📱 Telegram     🌐 Web        🎮 Game
+             WebApp        Auth         Client
+                │            │            │
+                └────────────┼────────────┘
+                             ▼
+                         👤 Player
+                             │
+                             ▼
+                        🔐 Session
 ```
 
-#### Telegram WebApp
+---
+
+### 📱 Telegram WebApp
 
 Telegram Mini App использует серверную проверку `initData`.
 
@@ -126,13 +127,19 @@ Telegram WebApp
       Сессия
 ```
 
-После успешной авторизации сервер создаёт сессию и выдаёт токен.
+После успешной авторизации сервер:
+
+1. проверяет Telegram `initData`;
+2. находит или создаёт игрока;
+3. связывает Telegram identity с игроком;
+4. создаёт серверную сессию;
+5. возвращает данные игрока и токен сессии.
 
 ---
 
 ### 🌐 Web Auth
 
-Для авторизации через браузер подготовлен отдельный flow:
+Для браузерной авторизации реализован отдельный flow.
 
 ```text
 /auth
@@ -142,7 +149,7 @@ Telegram WebApp
    │      ▼
    │   /telegram
    │      │
-   │      ├── 📱 Login через Telegram Bot
+   │      ├── 📱 Telegram Bot
    │      │
    │      └── 🌐 Login Widget
    │
@@ -151,15 +158,16 @@ Telegram WebApp
           └── 🚧 В разработке
 ```
 
-Текущие страницы:
+Публичные страницы:
 
 ```text
-https://theseus.tailfff273.ts.net/auth
-https://theseus.tailfff273.ts.net/telegram
-https://theseus.tailfff273.ts.net/telegram/app
+https://auth.tyaga-game.ru/
+https://auth.tyaga-game.ru/telegram
 ```
 
-Telegram Bot flow уже подготовлен для дальнейшей интеграции.
+Telegram Web Auth flow уже доступен через публичный HTTPS-домен и протестирован на нескольких устройствах.
+
+Страница `/telegram` предоставляет выбор способа входа через Telegram. Telegram Bot flow уже подключён к публичной странице, а Telegram Login Widget подготовлен для дальнейшей реализации.
 
 ---
 
@@ -223,53 +231,86 @@ Achievement
           └── Token
 ```
 
-Токены сессий не хранятся в базе данных в открытом виде — сервер работает с их хешами.
+Токены сессий не хранятся в базе данных в открытом виде — сервер работает с их SHA-256 хешами.
+
+Срок действия сессии настраивается через `AUTH_SESSION_DAYS`.
 
 ---
 
 ## 🌐 Архитектура
 
-Инфраструктура специально сделана максимально простой.
+Публичная инфраструктура построена вокруг отдельного VPS и собственного сервера Theseus.
 
 ```text
-                    Интернет
-                       │
-                       ▼
-              ┌─────────────────┐
-              │ Tailscale Funnel │
-              │      HTTPS       │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │   TYAGA API     │
-              │    Fastify      │
-              │     Node.js     │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │   PostgreSQL    │
-              └─────────────────┘
+                         Интернет
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │      VPS      │
+                    │               │
+                    │     Nginx     │
+                    │ HTTPS / TLS   │
+                    └───────┬───────┘
+                            │
+                     Reverse Tunnel
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │    Theseus    │
+                    │               │
+                    │   Fastify     │
+                    │    Node.js    │
+                    └───────┬───────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │  PostgreSQL   │
+                    └───────────────┘
 ```
 
-Backend работает на собственном Linux-сервере.
+Theseus используется как основной сервер приложения и базы данных.
 
-Публичный HTTPS-доступ предоставляется через **Tailscale Funnel**, поэтому для текущей инфраструктуры не требуется отдельный VPS или публичный IP.
+VPS используется как публичная точка входа. Nginx принимает HTTPS-запросы и передаёт их через reverse tunnel на Theseus.
+
+Это позволяет не выставлять сам сервер Theseus напрямую в интернет и при этом использовать собственные домены:
+
+```text
+https://api.tyaga-game.ru
+https://auth.tyaga-game.ru
+https://www.tyaga-game.ru
+```
+
+### API
+
+Основной API доступен через:
+
+```text
+https://api.tyaga-game.ru
+```
+
+Например:
+
+```text
+GET /health
+```
+
+возвращает состояние сервера и базы данных.
 
 ---
 
 ## 🧱 Стек
 
-| Компонент   | Технология              |
-| ----------- | ----------------------- |
-| Runtime     | Node.js                 |
-| API         | Fastify                 |
-| База данных | PostgreSQL              |
-| Авторизация | Telegram WebApp         |
-| Сеть        | Tailscale Funnel        |
-| Frontend    | HTML / CSS / JavaScript |
-| ОС сервера  | Linux                   |
+| Компонент     | Технология              |
+| ------------- | ----------------------- |
+| Runtime       | Node.js                 |
+| API           | Fastify                 |
+| База данных   | PostgreSQL              |
+| Авторизация   | Telegram WebApp         |
+| Reverse proxy | Nginx                   |
+| HTTPS         | Let's Encrypt           |
+| Туннель       | Reverse tunnel          |
+| Frontend      | HTML / CSS / JavaScript |
+| ОС сервера    | Linux                   |
 
 ---
 
@@ -305,15 +346,13 @@ tyaga-server/
 │   ├── db.js
 │   └── server.js
 │
-├── migration_001_achievements.sql
-├── migration_002_achievement_conditions.sql
-├── migration_003_auth.sql
-├── migration_003_one_active_session.sql
+├── migrations/
 │
 ├── .env.example
 ├── .gitignore
 ├── package.json
 ├── package-lock.json
+├── README.md
 └── schema.sql
 ```
 
@@ -392,13 +431,15 @@ Backend является **источником истины** для данны
 | Игроки                |   🟢   |
 | Telegram WebApp       |   🟢   |
 | Web Auth              |   🟢   |
-| Telegram Login Widget |   🟡   |
 | Telegram Bot Auth     |   🟡   |
+| Telegram Login Widget |   🟡   |
 | Сессии                |   🟢   |
 | Очки                  |   🟢   |
 | Скины                 |   🟢   |
 | Достижения            |   🟢   |
 | Публичный HTTPS       |   🟢   |
+| Reverse tunnel        |   🟢   |
+| Nginx                 |   🟢   |
 | Twitch                |    ⚪   |
 | Leaderboard           |    ⚪   |
 | Интеграция с игрой    |    ⚪   |
