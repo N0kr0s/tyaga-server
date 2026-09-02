@@ -231,6 +231,7 @@ async function requireAuth(request, reply) {
 module.exports = {
     createAuthSession,
     createAuthSessionWithClient,
+    hashToken,
     authenticateToken,
     revokeAuthSession,
     getBearerToken,

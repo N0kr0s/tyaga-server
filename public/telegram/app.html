@@ -2010,6 +2010,23 @@
 
         const tg = window.Telegram?.WebApp;
 
+        function getDeviceChallenge() {
+            const queryChallenge =
+                new URLSearchParams(
+                    window.location.search
+                ).get("challenge");
+
+            const startParam =
+                tg?.initDataUnsafe?.start_param;
+
+            const challenge =
+                queryChallenge || startParam || "";
+
+            return /^[0-9a-f]{64}$/i.test(challenge)
+                ? challenge
+                : "";
+        }
+
 
         /*
          * =====================================================
@@ -2361,6 +2378,51 @@
                     throw new Error(
                         "Telegram authentication was rejected."
                     );
+                }
+
+                const deviceChallenge =
+                    getDeviceChallenge();
+
+                if (deviceChallenge) {
+                    const completeResponse =
+                        await fetch(
+                            "/auth/device/complete",
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json",
+                                    "Authorization":
+                                        `Bearer ${data.token}`
+                                },
+
+                                body: JSON.stringify({
+                                    challenge:
+                                        deviceChallenge
+                                })
+                            }
+                        );
+
+                    let completeData;
+
+                    try {
+                        completeData =
+                            await completeResponse.json();
+                    } catch {
+                        throw new Error(
+                            "Invalid device auth response."
+                        );
+                    }
+
+                    if (
+                        !completeResponse.ok ||
+                        !completeData?.success
+                    ) {
+                        throw new Error(
+                            "Device authentication was rejected."
+                        );
+                    }
                 }
 
 

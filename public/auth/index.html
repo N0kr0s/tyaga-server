@@ -66,8 +66,8 @@
     <p>Войдите или зарегистрируйтесь</p>
 
     <button
+        id="telegramButton"
         class="telegram"
-        onclick="location.href='/telegram'"
     >
         Войти через Telegram
     </button>
@@ -80,6 +80,39 @@
     </button>
 
 </div>
+
+<script>
+    const queryParams = new URLSearchParams(
+        window.location.search
+    );
+
+    const hashParams = new URLSearchParams(
+        window.location.hash.replace(/^#/, "")
+    );
+
+    const challenge =
+        queryParams.get("challenge") ||
+        hashParams.get("challenge");
+
+    const telegramUrl = new URL(
+        "/telegram",
+        window.location.origin
+    );
+
+    if (challenge) {
+        telegramUrl.searchParams.set(
+            "challenge",
+            challenge
+        );
+    }
+
+    document
+        .getElementById("telegramButton")
+        .addEventListener("click", () => {
+            window.location.href =
+                telegramUrl.toString();
+        });
+</script>
 
 </body>
 </html>

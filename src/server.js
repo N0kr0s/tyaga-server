@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const path = require('path');
+const fastifyCors = require('@fastify/cors');
 const fastifyStatic = require('@fastify/static');
 
 const fastify = require('fastify')({
@@ -14,6 +15,7 @@ const skinsRoutes = require('./routes/skins');
 const achievementRoutes = require('./routes/achievements');
 const sessionRoutes = require('./routes/sessions');
 const authRoutes = require('./routes/auth');
+const deviceAuthRoutes = require('./routes/device-auth');
 
 const { requireAuth } = require('./services/auth');
 
@@ -45,11 +47,29 @@ fastify.get('/health', async (request, reply) => {
 // API ROUTES
 // ============================================================
 
+const allowedOrigins = new Set([
+    'https://www.tyaga-game.ru',
+    'https://tyaga-game.ru',
+    'https://auth.tyaga-game.ru'
+]);
+
+fastify.register(fastifyCors, {
+    origin: (origin, callback) => {
+        callback(
+            null,
+            !origin || allowedOrigins.has(origin)
+        );
+    },
+    methods: ['GET', 'HEAD', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+});
+
 fastify.register(playerRoutes);
 fastify.register(skinsRoutes);
 fastify.register(achievementRoutes);
 fastify.register(sessionRoutes);
 fastify.register(authRoutes);
+fastify.register(deviceAuthRoutes);
 
 // ============================================================
 // STATIC FILES
@@ -62,6 +82,10 @@ fastify.register(fastifyStatic, {
 // ============================================================
 // HTML PAGES
 // ============================================================
+
+fastify.get('/', async (request, reply) => {
+    return reply.sendFile('auth/index.html');
+});
 
 fastify.get('/telegram/app', async (request, reply) => {
     return reply.sendFile('telegram/app.html');

@@ -67,8 +67,8 @@
     <p>Выберите способ входа</p>
 
     <button
+        id="telegramBotButton"
         class="bot"
-        onclick="window.location.href='https://t.me/tyaga_game_bot/test'"
     >
         Войти через Telegram-бота
     </button>
@@ -81,6 +81,31 @@
     </button>
 
 </div>
+
+<script>
+    const challenge =
+        new URLSearchParams(
+            window.location.search
+        ).get("challenge");
+
+    const telegramBotUrl = new URL(
+        "https://t.me/tyaga_game_bot/test"
+    );
+
+    if (challenge) {
+        telegramBotUrl.searchParams.set(
+            "startapp",
+            challenge
+        );
+    }
+
+    document
+        .getElementById("telegramBotButton")
+        .addEventListener("click", () => {
+            window.location.href =
+                telegramBotUrl.toString();
+        });
+</script>
 
 </body>
 </html>

@@ -12,6 +12,33 @@ const {
     requireAuth
 } = require('../services/auth');
 
+function getPublicAvatarUrl(playerId, avatarUrl) {
+    if (
+        typeof avatarUrl !== 'string' ||
+        avatarUrl.length === 0
+    ) {
+        return avatarUrl;
+    }
+
+    try {
+        const url = new URL(avatarUrl);
+
+        if (
+            url.protocol !== 'https:' ||
+            url.hostname !== 't.me'
+        ) {
+            return avatarUrl;
+        }
+
+        return (
+            'https://auth.tyaga-game.ru/avatar' +
+            url.pathname
+        );
+    } catch {
+        return avatarUrl;
+    }
+}
+
 async function authRoutes(fastify) {
 
     // ============================================================
@@ -278,6 +305,12 @@ async function authRoutes(fastify) {
                         avatar_url: null
                     };
 
+                profile.avatar_url =
+                    getPublicAvatarUrl(
+                        playerId,
+                        profile.avatar_url
+                    );
+
                 await client.query('COMMIT');
 
                 // ------------------------------------------------
@@ -386,15 +419,23 @@ async function authRoutes(fastify) {
                     [request.playerId]
                 );
 
+            const profile =
+                profileResult.rows[0] || {
+                    nickname: null,
+                    avatar_url: null
+                };
+
+            profile.avatar_url =
+                getPublicAvatarUrl(
+                    request.playerId,
+                    profile.avatar_url
+                );
+
             return {
                 player:
                     playerResult.rows[0],
 
-                profile:
-                    profileResult.rows[0] || {
-                        nickname: null,
-                        avatar_url: null
-                    },
+                profile,
 
                 identities:
                     identitiesResult.rows

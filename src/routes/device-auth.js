@@ -3,7 +3,8 @@ const pool = require('../db');
 
 const {
     createAuthSessionWithClient,
-    hashToken
+    hashToken,
+    requireAuth
 } = require('../services/auth');
 
 const DEVICE_CHALLENGE_TTL_SECONDS = 300;
@@ -66,10 +67,170 @@ async function deviceAuthRoutes(fastify) {
                 challenge,
                 exchange_code: exchangeCode,
                 auth_url:
-                    `https://auth.tyaga-game.ru/#challenge=${encodeURIComponent(challenge)}`,
+                    `https://auth.tyaga-game.ru/?challenge=${encodeURIComponent(challenge)}`,
                 expires_in:
                     DEVICE_CHALLENGE_TTL_SECONDS
             };
+        }
+    );
+
+    // ============================================================
+    // COMPLETE DEVICE AUTH FROM TELEGRAM MINI APP
+    // ============================================================
+
+    fastify.post(
+        '/auth/device/complete',
+        {
+            preHandler: requireAuth
+        },
+        async (request, reply) => {
+            const body = request.body;
+
+            if (
+                body === null ||
+                typeof body !== 'object' ||
+                Array.isArray(body)
+            ) {
+                return reply.code(400).send({
+                    error: 'invalid_request_body'
+                });
+            }
+
+            const challenge = getRequestCode(
+                body.challenge
+            );
+
+            if (!challenge) {
+                return reply.code(400).send({
+                    error: 'invalid_challenge'
+                });
+            }
+
+            const client = await pool.connect();
+
+            try {
+                await client.query('BEGIN');
+
+                const result = await client.query(
+                    `
+                    SELECT
+                        id,
+                        player_id,
+                        expires_at,
+                        callback_expires_at,
+                        completed_at,
+                        consumed_at
+                    FROM game_auth_attempts
+                    WHERE start_code_hash = $1
+                    FOR UPDATE
+                    `,
+                    [hashToken(challenge)]
+                );
+
+                if (result.rowCount === 0) {
+                    await client.query('ROLLBACK');
+
+                    return reply.code(404).send({
+                        error: 'challenge_not_found'
+                    });
+                }
+
+                const attempt = result.rows[0];
+                const expired =
+                    new Date(attempt.expires_at).getTime() <= Date.now() ||
+                    (
+                        attempt.callback_expires_at !== null &&
+                        new Date(
+                            attempt.callback_expires_at
+                        ).getTime() <= Date.now()
+                    );
+
+                if (expired) {
+                    await client.query('ROLLBACK');
+
+                    return reply.code(410).send({
+                        error: 'game_auth_attempt_expired'
+                    });
+                }
+
+                if (attempt.consumed_at !== null) {
+                    await client.query('ROLLBACK');
+
+                    return reply.code(409).send({
+                        error: 'exchange_already_consumed'
+                    });
+                }
+
+                if (attempt.completed_at !== null) {
+                    await client.query('ROLLBACK');
+
+                    if (
+                        Number(attempt.player_id) ===
+                        Number(request.playerId)
+                    ) {
+                        return {
+                            success: true,
+                            status: 'completed',
+                            player_id: Number(attempt.player_id)
+                        };
+                    }
+
+                    return reply.code(409).send({
+                        error: 'challenge_already_completed'
+                    });
+                }
+
+                const completedResult = await client.query(
+                    `
+                    UPDATE game_auth_attempts
+                    SET
+                        player_id = $1,
+                        completed_at = NOW()
+                    WHERE id = $2
+                      AND completed_at IS NULL
+                      AND consumed_at IS NULL
+                    RETURNING
+                        player_id,
+                        completed_at
+                    `,
+                    [
+                        request.playerId,
+                        attempt.id
+                    ]
+                );
+
+                if (completedResult.rowCount === 0) {
+                    await client.query('ROLLBACK');
+
+                    return reply.code(409).send({
+                        error: 'challenge_already_completed'
+                    });
+                }
+
+                await client.query('COMMIT');
+
+                return {
+                    success: true,
+                    status: 'completed',
+                    player_id: Number(
+                        completedResult.rows[0].player_id
+                    )
+                };
+            } catch (error) {
+                try {
+                    await client.query('ROLLBACK');
+                } catch (rollbackError) {
+                    fastify.log.error(rollbackError);
+                }
+
+                fastify.log.error(error);
+
+                return reply.code(500).send({
+                    error: 'device_auth_completion_failed'
+                });
+            } finally {
+                client.release();
+            }
         }
     );
 
